@@ -18,5 +18,38 @@ export default class ProductController {
       }
     );
   };
-  static display = (req, res) => {};
+  static display = async (req, res) => {
+    try {
+      const products = await Product.find();
+      return res.status(201).send(products);
+    } catch (error) {
+      return res.status(400).send(error);
+    }
+  };
+  static delete = async (req, res) => {
+    const product = await Product.findOneAndDelete({ id: req.params.id });
+    if (product) {
+      return res.status(201).send("message:product deleted");
+    }
+    return res.status(404).send("product doesn't exist");
+  };
+  static update = async (req, res) => {
+    try {
+      const result = await Product.findOne({ id: req.params.id });
+      if (result) {
+        const updatedQuantity = result.quantity + parseInt(req.query.number);
+        await Product.findOneAndUpdate(
+          { id: req.params.id },
+          {
+            $set: { quantity: updatedQuantity },
+          }
+        );
+        return res.status(201).send("updated successfully");
+      }
+      return res.status(404).send("product doesn't exist");
+    } catch (error) {
+      console.log(error);
+      return res.status(400).send("error");
+    }
+  };
 }
